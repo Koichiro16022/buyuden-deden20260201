@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>武勇伝デデン・ジェネレーター</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f0f0f0; padding: 20px; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #d32f2f; font-size: 1.5rem; }
+        .step { margin-bottom: 20px; padding: 15px; border-bottom: 2px solid #eee; }
+        input[type="text"] { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
+        button { padding: 10px 20px; background-color: #d32f2f; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #b71c1c; }
+        .list-container { text-align: left; margin-top: 10px; max-height: 300px; overflow-y: auto; border: 1px solid #eee; padding: 10px; }
+        .item-row { padding: 8px; border-bottom: 1px solid #fafafa; cursor: pointer; transition: 0.2s; }
+        .item-row:hover { background-color: #fffde7; }
+        .result-box { background: #fffde7; padding: 15px; border: 2px dashed #fbc02d; margin-top: 20px; font-weight: bold; font-size: 1.2rem; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>武勇伝デデン・プロトタイプ</h1>
+
+    <div id="step1" class="step">
+        <p>キーワードを入力してください</p>
+        <input type="text" id="keyword" placeholder="例：空手、浮気、遅刻">
+        <br>
+        <button onclick="generateOchi()">オチを20案出す</button>
+        <button onclick="setRandomKeyword()" style="background-color: #757575;">ランダム</button>
+    </div>
+
+    <div id="step2" class="step hidden">
+        <p>慎吾の「オチ」を選んで修正してください</p>
+        <div id="ochiList" class="list-container"></div>
+        <input type="text" id="selectedOchi" placeholder="選択したオチがここに入ります">
+        <br>
+        <button onclick="generateFuri()">これに合う振りを20案出す</button>
+    </div>
+
+    <div id="step3" class="step hidden">
+        <p>あっちゃんの「振り」を選んで修正してください</p>
+        <div id="furiList" class="list-container"></div>
+        <input type="text" id="selectedFuri" placeholder="選択した振りがここに入ります">
+        <br>
+        <button onclick="finish()">武勇伝を完成させる！</button>
+    </div>
+
+    <div id="final" class="step hidden">
+        <div class="result-box" id="resultDisplay"></div>
+        <br>
+        <button onclick="location.reload()" style="background-color: #424242;">最初から作る</button>
+    </div>
+</div>
+
+<script>
+    // ※本来はAI(Gemini API)と連携しますが、プロトタイプとしてロジックをシミュレートします
+    function setRandomKeyword() {
+        const keywords = ["空手", "浮気", "寝坊", "テスト", "料理"];
+        document.getElementById('keyword').value = keywords[Math.floor(Math.random() * keywords.length)];
+    }
+
+    function generateOchi() {
+        const kw = document.getElementById('keyword').value;
+        if(!kw) return alert("キーワードを入れてね");
+        
+        const list = document.getElementById('ochiList');
+        list.innerHTML = "";
+        // プロトタイプ用のダミー20案（実際はここでAIが生成）
+        for(let i=1; i<=20; i++) {
+            let div = document.createElement('div');
+            div.className = "item-row";
+            div.innerText = `${kw}で（4） / 大失敗（4） / 泣いちゃった（5） #${i}`;
+            div.onclick = function() { document.getElementById('selectedOchi').value = this.innerText.split(' #')[0]; };
+            list.appendChild(div);
+        }
+        document.getElementById('step2').classList.remove('hidden');
+    }
+
+    function generateFuri() {
+        const ochi = document.getElementById('selectedOchi').value;
+        if(!ochi) return alert("オチを選んでね");
+
+        const list = document.getElementById('furiList');
+        list.innerHTML = "";
+        for(let i=1; i<=20; i++) {
+            let div = document.createElement('div');
+            div.className = "item-row";
+            div.innerText = `おれさま（4） / 伝説の（4） / 〇〇だぜ（5） #${i}`;
+            div.onclick = function() { document.getElementById('selectedFuri').value = this.innerText.split(' #')[0]; };
+            list.appendChild(div);
+        }
+        document.getElementById('step3').classList.remove('hidden');
+    }
+
+    function finish() {
+        const furi = document.getElementById('selectedFuri').value;
+        const ochi = document.getElementById('selectedOchi').value;
+        document.getElementById('resultDisplay').innerHTML = 
+            `あ：${furi}<br>し：すごい！ ${ochi}<br><br>デンデンデデンデン！`;
+        document.getElementById('final').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
