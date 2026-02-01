@@ -23,14 +23,22 @@ if 'furi_list' not in st.session_state:
 if 'kw_value' not in st.session_state:
     st.session_state.kw_value = "空手"
 
-kws = ["空手", "浮気", "寝坊", "テスト", "料理", "合コン", "筋トレ", "サウナ", "遅刻"]
+# ランダムキーワードを大幅増量（日常・ビジネス・珍事）
+kws = [
+    "空手", "浮気", "寝坊", "テスト", "料理", "合コン", "筋トレ", "サウナ", "遅刻",
+    "ダイエット", "二日酔い", "二度寝", "自撮り", "婚活", "美容整外科", "宝くじ",
+    "キャンプ", "デバッグ", "プレゼン", "残業", "領収書", "確定申告", "マザコン",
+    "ゴミ拾い", "ナンパ", "スカウト", "行列", "ポイ活", "メルカリ", "親知らず",
+    "職質", "忘れ物", "タワマン", "格安スマホ", "推し活", "AI", "メタバース"
+]
 
 # --- STEP 1: キーワード入力 ---
 if st.session_state.step == 1:
     st.subheader("① キーワード入力")
     c1, c2 = st.columns([3, 1])
     with c1:
-        kw = st.text_input("ネタの種（何について？）", value=st.session_state.kw_value)
+        # ご要望通りラベルを空（""）にしました
+        kw = st.text_input("", value=st.session_state.kw_value)
     with c2:
         if st.button("ランダム"):
             st.session_state.kw_value = random.choice(kws)
@@ -43,7 +51,6 @@ if st.session_state.step == 1:
             p += "4.解説、タイトル、凡例は一切禁止。データのみ20行出力せよ。"
             try:
                 res = model.generate_content(p)
-                # 不純物（記号や空行）を徹底除去
                 lines = [l.strip() for l in res.text.split('\n') if '/' in l]
                 st.session_state.ochi_list = lines[:20]
                 st.session_state.step = 2
@@ -53,58 +60,4 @@ if st.session_state.step == 1:
 
 # --- STEP 2: オチ選択 ---
 elif st.session_state.step == 2:
-    st.subheader("② 慎吾のオチを選択")
-    if st.session_state.ochi_list:
-        sel_o = st.selectbox("案を選択", st.session_state.ochi_list)
-        st.session_state.final_ochi = st.text_input("修正", value=sel_o)
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("振りを20案出す", use_container_width=True, type="primary"):
-                with st.spinner("あっちゃんがカッコつけています..."):
-                    # 振りのプロンプトにもスラッシュ区切りを徹底
-                    fp = f"オリラジ中田として、オチ「{st.session_state.final_ochi}」への強気な振りを20案出せ。"
-                    fp += "【厳守】1.ひらがなのみ 2.4/4/5のリズム 3.スラッシュ区切り "
-                    fp += "4.解説、凡例、タイトルは一切不要。データのみ20行出力せよ。"
-                    try:
-                        res_f = model.generate_content(fp)
-                        # スラッシュが含まれる行のみを抽出してリスト化
-                        f_lines = [l.strip() for l in res_f.text.split('\n') if '/' in l]
-                        st.session_state.furi_list = f_lines[:20]
-                        st.session_state.step = 3
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"ERR: {e}")
-        with c2:
-            if st.button("戻る", use_container_width=True):
-                st.session_state.step = 1
-                st.rerun()
-
-# --- STEP 3: 振り選択 ---
-elif st.session_state.step == 3:
-    st.markdown(f'<div class="ochi-box">し：すごい！ {st.session_state.final_ochi}</div>', unsafe_allow_html=True)
-    st.subheader("③ あっちゃんの振りを選択")
-    if st.session_state.furi_list:
-        sel_f = st.selectbox("案を選択", st.session_state.furi_list)
-        st.session_state.final_furi = st.text_input("修正", value=sel_f)
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("完成！", use_container_width=True, type="primary"):
-                st.session_state.step = 4
-                st.rerun()
-        with c2:
-            if st.button("戻る", use_container_width=True):
-                st.session_state.step = 2
-                st.rerun()
-
-# --- FINAL: 結果 ---
-elif st.session_state.step == 4:
-    st.success("伝説完成！")
-    st.markdown("---")
-    # ここでもリズムよく表示
-    st.markdown(f"### **あ：{st.session_state.final_furi}**")
-    st.markdown(f"### **し：すごい！ {st.session_state.final_ochi}**")
-    st.markdown("### **＼ デデンデンデンデン！ ／**")
-    if st.button("新しく作る", use_container_width=True):
-        for k in list(st.session_state.keys()):
-            del st.session_state[k]
-        st.rerun()
+    st.subheader("②
