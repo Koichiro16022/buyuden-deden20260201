@@ -25,21 +25,20 @@ if 'kw_value' not in st.session_state:
 
 kws = ["空手", "浮気", "寝坊", "テスト", "料理", "合コン", "筋トレ", "サウナ", "遅刻"]
 
-# --- STEP 1 ---
+# --- STEP 1: キーワード入力 ---
 if st.session_state.step == 1:
     st.subheader("① キーワード入力")
-    target = st.selectbox("誰向け？", ["エンジニア", "経理", "営業", "品質管理"])
     c1, c2 = st.columns([3, 1])
     with c1:
-        kw = st.text_input("ネタの種", value=st.session_state.kw_value)
+        kw = st.text_input("ネタの種（何について？）", value=st.session_state.kw_value)
     with c2:
         if st.button("ランダム"):
             st.session_state.kw_value = random.choice(kws)
             st.rerun()
     
-    if st.button("オチを出す", use_container_width=True, type="primary"):
+    if st.button("オチを20案出す", use_container_width=True, type="primary"):
         with st.spinner("思考中..."):
-            p = f"{kw}の{target}向けオチを20案。ひらがな、4/4/5、スラッシュ区切り。"
+            p = f"キーワード「{kw}」で情けないオチを20案。ひらがな、4/4/5、スラッシュ区切り。"
             try:
                 res = model.generate_content(p)
                 st.session_state.ochi_list = [l.strip() for l in res.text.split('\n') if l.strip()]
@@ -48,7 +47,7 @@ if st.session_state.step == 1:
             except Exception as e:
                 st.error(f"ERR: {e}")
 
-# --- STEP 2 ---
+# --- STEP 2: オチ選択 ---
 elif st.session_state.step == 2:
     st.subheader("② 慎吾のオチを選択")
     if st.session_state.ochi_list:
@@ -56,7 +55,7 @@ elif st.session_state.step == 2:
         st.session_state.final_ochi = st.text_input("修正", value=sel_o)
         c1, c2 = st.columns(2)
         with c1:
-            if st.button("振りを出す", use_container_width=True, type="primary"):
+            if st.button("振りを20案出す", use_container_width=True, type="primary"):
                 with st.spinner("思考中..."):
                     fp = f"オチ「{st.session_state.final_ochi}」への強気な振りを20案。ひらがな、4/4/5。"
                     try:
@@ -71,7 +70,31 @@ elif st.session_state.step == 2:
                 st.session_state.step = 1
                 st.rerun()
 
-# --- STEP 3 ---
+# --- STEP 3: 振り選択 ---
 elif st.session_state.step == 3:
     st.markdown(f'<div class="ochi-box">し：すごい！ {st.session_state.final_ochi}</div>', unsafe_allow_html=True)
     st.subheader("③ あっちゃんの振りを選択")
+    if st.session_state.furi_list:
+        sel_f = st.selectbox("案を選択", st.session_state.furi_list)
+        st.session_state.final_furi = st.text_input("修正", value=sel_f)
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("完成！", use_container_width=True, type="primary"):
+                st.session_state.step = 4
+                st.rerun()
+        with c2:
+            if st.button("戻る", use_container_width=True):
+                st.session_state.step = 2
+                st.rerun()
+
+# --- FINAL: 結果 ---
+elif st.session_state.step == 4:
+    st.success("伝説完成！")
+    st.markdown("---")
+    st.markdown(f"### **あ：{st.session_state.final_furi}**")
+    st.markdown(f"### **し：すごい！ {st.session_state.final_ochi}**")
+    st.markdown("### **＼ デデンデンデンデン！ ／**")
+    if st.button("新しく作る", use_container_width=True):
+        for k in list(st.session_state.keys()):
+            del st.session_state[k]
+        st.rerun()
