@@ -8,17 +8,25 @@ model = genai.GenerativeModel('models/gemini-flash-latest')
 
 st.set_page_config(page_title="武勇伝デデン", page_icon="💃")
 
-# CSSでボタン位置調整
+# CSSでレイアウトと色を調整
 st.markdown("""
     <style>
     div[data-testid="stColumn"] > div > div > div > button {
         margin-top: 28px !important;
     }
+    .ochi-display {
+        background-color: #f0f2f6;
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 5px solid #ff4b4b;
+        margin-bottom: 20px;
+    }
+    .furi-label { color: #1f77b4; font-weight: bold; }
+    .ochi-label { color: #ff4b4b; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("💃 武勇伝デデン")
-st.caption("AIの量と人間の質で創る、あなただけの武勇伝")
 
 if 'step' not in st.session_state:
     st.session_state.step = 1
@@ -28,8 +36,9 @@ if 'furi_list' not in st.session_state:
     st.session_state.furi_list = []
 if 'kw_value' not in st.session_state:
     st.session_state.kw_value = "空手"
+if 'final_ochi' not in st.session_state:
+    st.session_state.final_ochi = ""
 
-# 1. ランダム候補を大幅に増量
 random_kws = [
     "空手", "浮気", "寝坊", "テスト", "料理", "合コン", "筋トレ", "キャンプ", "遅刻", "ダイエット",
     "プログラミング", "デバッグ", "プレゼン", "飲み会", "二度寝", "SNS", "サウナ", "宝くじ", "婚活", "美容整形",
@@ -50,23 +59,9 @@ if st.session_state.step == 1:
     if st.button("オチを20案出す", use_container_width=True, type="primary"):
         with st.spinner("慎吾が必死に20案考えています..."):
             try:
-                # 2. AIが手を抜かないようにプロンプトを強化
-                prompt = f"""
-                あなたはオリエンタルラジオの藤森慎吾です。
-                キーワード「{kw}」を使って、情けないオチを「4・4・5」のリズムで【必ず20案】出してください。
-                
-                【出力ルール】
-                ・1行に1案ずつ。
-                ・番号(1. 2. など)や余計な解説、挨拶は一切禁止。
-                ・リズムは「〇〇〇〇 / 〇〇〇〇 / 〇〇〇〇〇」を守ること。
-                ・必ず20行出力すること。
-                """
+                prompt = f"オリエンタルラジオの武勇伝ネタ。キーワード「{kw}」で、慎吾の『情けないオチ』を「4・4・5」のリズムで必ず20案。1行1案、解説不要。"
                 response = model.generate_content(prompt)
-                # 空行を除去してリスト化
-                raw_list = [line.strip() for line in response.text.strip().split('\n') if line.strip()]
-                # 万が一AIが番号を付けてきた場合の簡易クリーニング
-                st.session_state.ochi_list = [line.split('. ')[-1] if '. ' in line else line for line in raw_list]
-                
+                st.session_state.ochi_list = [line.strip() for line in response.text.strip().split('\n') if line.strip()]
                 st.session_state.step = 2
                 st.rerun()
             except Exception as e:
@@ -75,59 +70,58 @@ if st.session_state.step == 1:
 # --- STEP 2: オチ選択・修正 ---
 elif st.session_state.step == 2:
     st.subheader("② 慎吾の「オチ」を選択・修正")
-    if st.session_state.ochi_list:
-        selected_base_ochi = st.selectbox(f"AI案（全{len(st.session_state.ochi_list)}案）", st.session_state.ochi_list)
-        final_ochi = st.text_input("ここでオチを自由に修正してください", value=selected_base_ochi)
-        st.session_state.final_ochi = final_ochi
+    selected_base_ochi = st.selectbox(f"AI案（全{len(st.session_state.ochi_list)}案）", st.session_state.ochi_list)
+    final_ochi = st.text_input("ここでオチを自由に修正してください", value=selected_base_ochi)
+    st.session_state.final_ochi = final_ochi
 
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("これで確定！振りを20案出す", use_container_width=True, type="primary"):
-                with st.spinner("中田敦彦がカッコつけて20案考えています..."):
-                    prompt = f"""
-                    あなたはオリエンタルラジオの中田敦彦です。
-                    オチ「{final_ochi}」に繋がる、自信満々な『強気な振り』を「4・4・5」のリズムで【必ず20案】出してください。
-                    
-                    【出力ルール】
-                    ・1行に1案ずつ。
-                    ・番号や解説は一切禁止。
-                    ・必ず20行出力すること。
-                    """
-                    response = model.generate_content(prompt)
-                    raw_list = [line.strip() for line in response.text.strip().split('\n') if line.strip()]
-                    st.session_state.furi_list = [line.split('. ')[-1] if '. ' in line else line for line in raw_list]
-                    st.session_state.step = 3
-                    st.rerun()
-        with col2:
-            if st.button("戻る", use_container_width=True):
-                st.session_state.step = 1
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("これで確定！振りを20案出す", use_container_width=True, type="primary"):
+            with st.spinner("中田敦彦がカッコつけて20案考えています..."):
+                prompt = f"武勇伝。オチ「{final_ochi}」に繋がる、あっちゃんの『強気な振り』を「4・4・5」のリズムで必ず20案。1行1案、解説不要。"
+                response = model.generate_content(prompt)
+                st.session_state.furi_list = [line.strip() for line in response.text.strip().split('\n') if line.strip()]
+                st.session_state.step = 3
                 st.rerun()
+    with col2:
+        if st.button("戻る", use_container_width=True):
+            st.session_state.step = 1
+            st.rerun()
 
 # --- STEP 3: 振り選択・修正 ---
 elif st.session_state.step == 3:
-    st.subheader("③ あっちゃんの「振り」を選択・修正")
-    if st.session_state.furi_list:
-        selected_base_furi = st.selectbox(f"AI案（全{len(st.session_state.furi_list)}案）", st.session_state.furi_list)
-        final_furi = st.text_input("ここで振りを自由に修正してください", value=selected_base_furi)
-        st.session_state.final_furi = final_furi
+    # 【追加機能】確定したオチを常に表示
+    st.markdown(f"""
+        <div class="ochi-display">
+            <span class="ochi-label">【確定したオチ】</span><br>
+            <h3 style="margin:0;">し：すごい！ {st.session_state.final_ochi}</h3>
+        </div>
+    """, unsafe_allow_html=True)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("武勇伝を完成させる！", use_container_width=True, type="primary"):
-                st.session_state.step = 4
-                st.rerun()
-        with col2:
-            if st.button("戻る", use_container_width=True):
-                st.session_state.step = 2
-                st.rerun()
+    st.subheader("③ あっちゃんの「振り」を選択・修正")
+    selected_base_furi = st.selectbox(f"AI案（全{len(st.session_state.furi_list)}案）", st.session_state.furi_list)
+    final_furi = st.text_input("ここで振りを自由に修正してください", value=selected_base_furi)
+    st.session_state.final_furi = final_furi
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("武勇伝を完成させる！", use_container_width=True, type="primary"):
+            st.session_state.step = 4
+            st.rerun()
+    with col2:
+        if st.button("戻る", use_container_width=True):
+            st.session_state.step = 2
+            st.rerun()
 
 # --- FINAL ---
 elif st.session_state.step == 4:
     st.balloons()
     st.success("伝説完成！")
+    st.markdown("---")
     st.markdown(f"### **あ：{st.session_state.final_furi}**")
     st.markdown(f"### **し：すごい！ {st.session_state.final_ochi}**")
     st.markdown("### **＼ デンデンデデンデン！ ／**")
+    st.markdown("---")
     if st.button("新しいネタを作る", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
