@@ -38,7 +38,10 @@ if st.session_state.step == 1:
     
     if st.button("オチを20案出す", use_container_width=True, type="primary"):
         with st.spinner("思考中..."):
-            p = f"キーワード「{kw}」で情けないオチを20案。ひらがな、4/4/5、スラッシュ区切り。"
+            # プロンプトを「データのみ」に特化させて修正
+            p = f"オリラジ慎吾として、キーワード「{kw}」の情けないオチを20案出せ。"
+            p += "【厳守】1.ひらがなのみ 2.4/4/5のリズム 3.スラッシュ区切り "
+            p += "4.「凡例」「内容」「キーワード」などの解説やタイトルは一切書かず、20行のデータのみ出力せよ。"
             try:
                 res = model.generate_content(p)
                 st.session_state.ochi_list = [l.strip() for l in res.text.split('\n') if l.strip()]
@@ -57,7 +60,9 @@ elif st.session_state.step == 2:
         with c1:
             if st.button("振りを20案出す", use_container_width=True, type="primary"):
                 with st.spinner("思考中..."):
-                    fp = f"オチ「{st.session_state.final_ochi}」への強気な振りを20案。ひらがな、4/4/5。"
+                    # こちらのプロンプトも同様に修正
+                    fp = f"オリラジ中田として、オチ「{st.session_state.final_ochi}」への強気な振りを20案出せ。"
+                    fp += "【厳守】1.ひらがなのみ 2.4/4/5のリズム 3.「凡例」等の解説は一切不要。20行のデータのみ出力せよ。"
                     try:
                         res_f = model.generate_content(fp)
                         st.session_state.furi_list = [l.strip() for l in res_f.text.split('\n') if l.strip()]
