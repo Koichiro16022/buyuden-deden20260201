@@ -37,14 +37,15 @@ if st.session_state.step == 1:
             st.rerun()
     
     if st.button("オチを20案出す", use_container_width=True, type="primary"):
-        with st.spinner("思考中..."):
-            # プロンプトを「データのみ」に特化させて修正
+        with st.spinner("慎吾がリズムを刻んでいます..."):
             p = f"オリラジ慎吾として、キーワード「{kw}」の情けないオチを20案出せ。"
             p += "【厳守】1.ひらがなのみ 2.4/4/5のリズム 3.スラッシュ区切り "
-            p += "4.「凡例」「内容」「キーワード」などの解説やタイトルは一切書かず、20行のデータのみ出力せよ。"
+            p += "4.解説、タイトル、凡例は一切禁止。データのみ20行出力せよ。"
             try:
                 res = model.generate_content(p)
-                st.session_state.ochi_list = [l.strip() for l in res.text.split('\n') if l.strip()]
+                # 不純物（記号や空行）を徹底除去
+                lines = [l.strip() for l in res.text.split('\n') if '/' in l]
+                st.session_state.ochi_list = lines[:20]
                 st.session_state.step = 2
                 st.rerun()
             except Exception as e:
@@ -59,13 +60,16 @@ elif st.session_state.step == 2:
         c1, c2 = st.columns(2)
         with c1:
             if st.button("振りを20案出す", use_container_width=True, type="primary"):
-                with st.spinner("思考中..."):
-                    # こちらのプロンプトも同様に修正
+                with st.spinner("あっちゃんがカッコつけています..."):
+                    # 振りのプロンプトにもスラッシュ区切りを徹底
                     fp = f"オリラジ中田として、オチ「{st.session_state.final_ochi}」への強気な振りを20案出せ。"
-                    fp += "【厳守】1.ひらがなのみ 2.4/4/5のリズム 3.「凡例」等の解説は一切不要。20行のデータのみ出力せよ。"
+                    fp += "【厳守】1.ひらがなのみ 2.4/4/5のリズム 3.スラッシュ区切り "
+                    fp += "4.解説、凡例、タイトルは一切不要。データのみ20行出力せよ。"
                     try:
                         res_f = model.generate_content(fp)
-                        st.session_state.furi_list = [l.strip() for l in res_f.text.split('\n') if l.strip()]
+                        # スラッシュが含まれる行のみを抽出してリスト化
+                        f_lines = [l.strip() for l in res_f.text.split('\n') if '/' in l]
+                        st.session_state.furi_list = f_lines[:20]
                         st.session_state.step = 3
                         st.rerun()
                     except Exception as e:
@@ -96,6 +100,7 @@ elif st.session_state.step == 3:
 elif st.session_state.step == 4:
     st.success("伝説完成！")
     st.markdown("---")
+    # ここでもリズムよく表示
     st.markdown(f"### **あ：{st.session_state.final_furi}**")
     st.markdown(f"### **し：すごい！ {st.session_state.final_ochi}**")
     st.markdown("### **＼ デデンデンデンデン！ ／**")
