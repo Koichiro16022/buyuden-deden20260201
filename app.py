@@ -30,7 +30,9 @@ random_kws = ["空手", "浮気", "寝坊", "テスト", "料理", "合コン", 
 # --- STEP 1 ---
 if st.session_state.step == 1:
     st.subheader("① 設定とキーワード")
-    target = st.selectbox("誰向けの武勇伝にしますか？", ["一般", "エンジニア", "経理", "営業", "品質管理"])
+    # 「一般」を削除し、戦略に基づいたターゲットのみに絞り込み
+    target = st.selectbox("ターゲットを選択", ["エンジニア", "経理", "営業", "品質管理"])
+    
     col_kw, col_rnd = st.columns([3, 1])
     with col_kw:
         kw = st.text_input("キーワード", value=st.session_state.kw_value)
@@ -41,9 +43,9 @@ if st.session_state.step == 1:
     
     if st.button("オチを20案出す", use_container_width=True, type="primary"):
         with st.spinner("思考中..."):
-            prompt = f"キーワード「{kw}」で{target}向けの情けないオチを20案出せ。ルール：1.ひらがなのみ。2.4/4/5のリズム。3.スラッシュ区切り。4.リストのみ出力。"
+            p = f"キーワード「{kw}」で{target}向けの情けないオチを20案出せ。ルール：1.ひらがなのみ。2.4/4/5のリズム。3.スラッシュ区切り。4.リストのみ出力。"
             try:
-                res = model.generate_content(prompt)
+                res = model.generate_content(p)
                 st.session_state.ochi_list = [l.strip() for l in res.text.strip().split('\n') if l.strip()]
                 st.session_state.step = 2
                 st.rerun()
@@ -54,39 +56,4 @@ if st.session_state.step == 1:
 elif st.session_state.step == 2:
     st.subheader("② 慎吾の「オチ」を選択")
     if st.session_state.ochi_list:
-        selected_ochi = st.selectbox("AI案（ひらがな 4/4/5）", st.session_state.ochi_list)
-        st.session_state.final_ochi = st.text_input("オチを修正", value=selected_ochi)
-        
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("振りを20案出す", use_container_width=True, type="primary"):
-                with st.spinner("思考中..."):
-                    f_prompt = f"オチ「{st.session_state.final_ochi}」に繋がる強気な振りを20案出せ。ルール：1.ひらがなのみ。2.4/4/5のリズム。3.スラッシュ区切り。4.リストのみ出力。"
-                    try:
-                        res = model.generate_content(f_prompt)
-                        st.session_state.furi_list = [l.strip() for l in res.text.strip().split('\n') if l.strip()]
-                        st.session_state.step = 3
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"エラー: {e}")
-        with c2:
-            if st.button("戻る", use_container_width=True):
-                st.session_state.step = 1
-                st.rerun()
-
-# --- STEP 3 ---
-elif st.session_state.step == 3:
-    st.markdown(f'<div class="ochi-display">し：すごい！ {st.session_state.final_ochi}</div>', unsafe_allow_html=True)
-    st.subheader("③ あっちゃんの「振り」を選択")
-    if st.session_state.furi_list:
-        selected_furi = st.selectbox("AI案（ひらがな 4/4/5）", st.session_state.furi_list)
-        st.session_state.final_furi = st.text_input("振りを修正", value=selected_furi)
-        
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("完成！", use_container_width=True, type="primary"):
-                st.session_state.step = 4
-                st.rerun()
-        with c2:
-            if st.button("戻る", use_container_width=True):
-                st.session_state.step = 2
+        selected_ochi = st.selectbox("AI案（ひらがな 4/4/
