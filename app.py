@@ -8,7 +8,7 @@ model = genai.GenerativeModel('models/gemini-flash-latest')
 
 st.set_page_config(page_title="武勇伝デデン", page_icon="💃")
 
-# CSS
+# CSSでレイアウトと色を調整
 st.markdown("""
     <style>
     div[data-testid="stColumn"] > div > div > div > button {
@@ -21,13 +21,13 @@ st.markdown("""
         border-left: 5px solid #ff4b4b;
         margin-bottom: 20px;
     }
-    .furi-label { color: #1f77b4; font-weight: bold; }
     .ochi-label { color: #ff4b4b; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("💃 武勇伝デデン")
 
+# セッション状態の初期化
 if 'step' not in st.session_state:
     st.session_state.step = 1
 if 'ochi_list' not in st.session_state:
@@ -59,15 +59,13 @@ if st.session_state.step == 1:
     if st.button("オチを20案出す", use_container_width=True, type="primary"):
         with st.spinner("慎吾がひらがなで考えています..."):
             try:
-                # ひらがな指定とリズム指定を強化
                 prompt = f"""
-                あなたは藤森慎吾です。キーワード「{kw}」で情けないオチを20案出してください。
-                
-                【絶対ルール】
-                1. すべて【ひらがな】だけで出力すること（漢字・カタカナ禁止）。
-                2. 「4文字 / 4文字 / 5文字」のリズムを厳守し、スラッシュで区切ること。
-                3. 余計な解説は不要。20行のリストのみ出力。
-                
+                キーワード「{kw}」で藤森慎吾の情けないオチを20案出してください。
+                【ルール】
+                1. すべて「ひらがな」のみ（漢字・カタカナ禁止）。
+                2. 「4文字 / 4文字 / 5文字」のリズムを厳守。
+                3. スラッシュで区切る。
+                4. リストのみ出力。
                 例：かわらを / わったら / おれていた
                 """
                 response = model.generate_content(prompt)
@@ -80,7 +78,7 @@ if st.session_state.step == 1:
 # --- STEP 2: オチ選択・修正 ---
 elif st.session_state.step == 2:
     st.subheader("② 慎吾の「オチ」を選択・修正")
-    selected_base_ochi = st.selectbox(f"AI案（ひらがな 4/4/5）", st.session_state.ochi_list)
+    selected_base_ochi = st.selectbox("AI案（ひらがな 4/4/5）", st.session_state.ochi_list)
     final_ochi = st.text_input("ここでオチを自由に修正してください", value=selected_base_ochi)
     st.session_state.final_ochi = final_ochi
 
@@ -89,45 +87,13 @@ elif st.session_state.step == 2:
         if st.button("これで確定！振りを20案出す", use_container_width=True, type="primary"):
             with st.spinner("あっちゃんがひらがなで考えています..."):
                 prompt = f"""
-                あなたは中田敦彦です。オチ「{final_ochi}」に繋がる、強気な振りを20案出してください。
-                
-                【絶対ルール】
-                1. すべて【ひらがな】だけで出力すること（漢字・カタカナ禁止）。
-                2. 「4文字 / 4文字 / 5文字」のリズムを厳守し、スラッシュで区切ること。
-                3. 余計な解説は不要。20行のリストのみ出力。
+                オチ「{final_ochi}」に繋がる中田敦彦の強気な振りを20案出してください。
+                【ルール】
+                1. すべて「ひらがな」のみ（漢字・カタカナ禁止）。
+                2. 「4文字 / 4文字 / 5文字」のリズムを厳守。
+                3. スラッシュで区切る。
+                4. リストのみ出力。
                 """
                 response = model.generate_content(prompt)
                 st.session_state.furi_list = [line.strip() for line in response.text.strip().split('\n') if line.strip()]
-                st.session_state.step = 3
-                st.rerun()
-    with col2:
-        if st.button("戻る", use_container_width=True):
-            st.session_state.step = 1
-            st.rerun()
-
-# --- STEP 3: 振り選択・修正 ---
-elif st.session_state.step == 3:
-    st.markdown(f"""
-        <div class="ochi-display">
-            <span class="ochi-label">【確定したオチ】</span><br>
-            <h3 style="margin:0;">し：すごい！ {st.session_state.final_ochi}</h3>
-        </div>
-    """, unsafe_allow_html=True)
-
-    st.subheader("③ あっちゃんの「振り」を選択・修正")
-    selected_base_furi = st.selectbox(f"AI案（ひらがな 4/4/5）", st.session_state.furi_list)
-    final_furi = st.text_input("ここで振りを自由に修正してください", value=selected_base_furi)
-    st.session_state.final_furi = final_furi
-
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("武勇伝を完成させる！", use_container_width=True, type="primary"):
-            st.session_state.step = 4
-            st.rerun()
-    with col2:
-        if st.button("戻る", use_container_width=True):
-            st.session_state.step = 2
-            st.rerun()
-
-# --- FINAL ---
-elif
+                st.session_state.
